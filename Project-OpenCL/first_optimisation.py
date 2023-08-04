@@ -17,7 +17,7 @@ import math
 
 
 # Get kernel source code from file.
-kernel_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "kernels_optimised_1.cl")
+kernel_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "first_optimised_kernel.cl")
 kernel = open(kernel_file).read()
 
 
@@ -42,7 +42,7 @@ def highlight_stars_result(height, width, array, name):
             pixels[j, i] = (r, g, b)
 
     f.close()
-    image.save(f"results/Optimsed1Parallel{name}.png")
+    image.save(f"results/FirstOptimised{name}.png")
 
 
 
