@@ -1,10 +1,11 @@
+
 #!/usr/bin/env python3
 from cgi import print_directory
 from distutils.ccompiler import gen_lib_options
 from pickle import GLOBAL
 from re import X
 import sys
-from threading import Thread
+from threading import Thread, local
 from tkinter import W, Widget
 import pyopencl as cl
 import numpy as np
@@ -12,10 +13,11 @@ import os
 from PIL import Image, ImageOps
 import time
 import math
+#OPTIMSATION 1 : EVERY ROW WORK GROUP SIZE
 
 
 # Get kernel source code from file.
-kernel_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "kernels.cl")
+kernel_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "kernels_optimised_1.cl")
 kernel = open(kernel_file).read()
 
 
@@ -24,13 +26,11 @@ context = cl.create_some_context()
 queue   = cl.CommandQueue(context)
 program = cl.Program(context, kernel).build()
 
-
-
 def highlight_stars_result(height, width, array, name):
     # Create a new blank image with a white background
     image = Image.new("RGB", (width, height), "white")
     pixels = image.load()
-    f = open("stars.txt", "w")
+    f = open("starsOptimised1.txt", "w")
     for i in range(height):
         for j in range(width):
             if array[i*width+j] == 1:
@@ -83,7 +83,7 @@ h_GreyValues  = np.ascontiguousarray(np.zeros(SIZE).astype(np.float32)).astype(n
 h_PartialSums = np.zeros(HEIGHT).astype(np.float32)
 h_Stars       = np.zeros(SIZE).astype(np.int32) 
 
-print("array length = ", SIZE)
+#print("array length = ", SIZE)
 assert(SIZE == len(h_Rvalues) == len(h_Gvalues) == len(h_Bvalues) == len(h_GreyValues))
 
 
@@ -107,10 +107,10 @@ def main():
     sum = program.sum
     sum.set_scalar_arg_dtypes([np.int32, None, None])
 
-    global_work_size = (HEIGHT, )  # 1 work item per row = WIDTH work items.
-    local_work_size  = (WIDTH, )    # 16 work items per group.
+    global_range = (HEIGHT, )  # 1 work item per row = WIDTH work items.
+    local_range  = (WIDTH, )    # 16 work items per group.
     
-    sum(queue, global_work_size , None, WIDTH, d_GreyValues,  d_PartialSums)
+    sum(queue, global_range , None, WIDTH, d_GreyValues,  d_PartialSums)
   
     cl.enqueue_copy(queue, h_PartialSums, d_PartialSums)
     queue.finish()
@@ -127,9 +127,11 @@ def main():
     
     WINDOWSIZE = 3
     identifyStars = program.identifyStars
-    identifyStars.set_scalar_arg_dtypes([np.int32, np.int32, np.int32, np.float32, None, None])
-    global_work_size = (HEIGHT,WIDTH)  
-    identifyStars(queue, global_work_size , None,  HEIGHT, WIDTH,  WINDOWSIZE,  THRESHOLD, d_GreyValues, d_Stars)           
+    identifyStars.set_scalar_arg_dtypes([np.int32, np.int32, np.int32, np.int32, np.float32, None, None])
+   
+    global_range = (HEIGHT,WIDTH//1024+1) 
+    local_range =  None
+    identifyStars(queue, global_range , local_range, 1024,  HEIGHT, WIDTH,  WINDOWSIZE,  THRESHOLD, d_GreyValues, d_Stars)           
     queue.finish()
     cl.enqueue_copy(queue, h_Stars, d_Stars)
     end_time = time.perf_counter()

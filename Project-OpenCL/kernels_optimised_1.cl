@@ -1,4 +1,6 @@
 #define PYBIND11_DETAILED_ERROR_MESSAGES
+//OPTIMSATION 1: 1 WORK ITEM PER ROW
+
 
 //multiply every element of an array with a constant
 __kernel void multiplyByConstant(const int N, const int C, __global float *A){
@@ -61,46 +63,46 @@ int correct_col_index(int col, int width){
 
 //Expects that every element in the array IsStars is 0. When a star i is a star we will assign IsStars[i] = 1
 //if WindowSize is 3 when looking in a 7*7 square 
-__kernel void identifyStars(const int Height, const int Width, const int WindowSize, const float MinBrightness, __global float *L, __global int *IsStars){
+//N == Width, but for readibility we add this paramater explicitly
+__kernel void identifyStars(const int N,  const int Height, const int Width, const int WindowSize, const float MinBrightness, __global float *L, __global int *IsStars){
   // We are going to spawn as many work items as there are items in the array n
-  int i = get_global_id(0); 
+  int i = get_global_id(0);
   int j = get_global_id(1);
-  if( (i == 0 && j == 0) || (i == Width -1 && j == Height - 1 )){
-   //printf("called identifyStars i:%d j:%d Width:%d Height:%d WindowSize:%d MinBrightness: %f\n", i, j,Width,Height,WindowSize,MinBrightness);
-  } 
+  if(j*N >= Width) {return;}
+  int startCol = i;
+  int startRow = j*1024; 
+  for(int k = 0; k < N; k++){
+    int curr_col = startCol;
+    int curr_row = startRow + k; 
 
-  if(i >= Height) return;
-  if(j >= Width) return;
-  float brightnessPixel = L[i*Width+j];
-  if(brightnessPixel < MinBrightness) return;
-  int row;
-  int col;
-  float maxBrightness = 0.0f;
-
-  //calculate max brightness of neighbours
-  for(row = i - WindowSize; row < i + WindowSize + 1; row++){
-      for(col = j - WindowSize; col < j + WindowSize + 1; col++){
-        /*
-        //Check we are not out of bounds.
-        if(row < 0 || row  >= Height || col  < 0 || col >= Width){
-          continue; 
-        }*/
-        //Skip the pixel itself.
-        if(row == i && col == j){
-          continue; 
+    //if(curr_col < 0 || curr_col >= Width || curr_row < 0 || curr_row >= Height){
+    //    continue;
+    //}
+   
+    float brightness_curr_pixel = L[curr_row*Width+curr_col];
+    if(brightness_curr_pixel < MinBrightness) continue;
+    int row_i;
+    int col_j;
+    float maxBrightness = 0.0f;
+      //calculate max brightness of neighbours
+    for(row_i = curr_row - WindowSize; row_i < curr_row + WindowSize + 1; row_i++){
+        for(col_j = curr_col - WindowSize; col_j < curr_col + WindowSize + 1; col_j++){
+            //Skip the pixel itself.
+            if(row_i == curr_row && col_j == curr_col){
+              continue; 
+            }
+            int corrected_row = correct_row_index(row_i, Height);
+            int corrected_col = correct_col_index(col_j, Width);
+            float brightness = L[corrected_row*Width+corrected_col];
+            if(brightness > maxBrightness){
+                maxBrightness = brightness;
+            }
         }
-        int correct_row = correct_row_index(row, Height);
-        int correct_col = correct_col_index(col, Width);
-        float brightness = L[correct_row*Width+correct_col];
-        if(brightness > maxBrightness){
-          maxBrightness = brightness;
-        }
-      }
+    }
+    if(brightness_curr_pixel >= maxBrightness){  
+        IsStars[curr_row*Width+curr_col] = 1; 
+    }
   }
-  if(brightnessPixel >= maxBrightness){  
-    IsStars[i*Width+j] = 1; 
-  }
-  
 }
 
 
