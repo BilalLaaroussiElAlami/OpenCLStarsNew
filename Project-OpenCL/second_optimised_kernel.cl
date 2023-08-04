@@ -68,20 +68,23 @@ __kernel void identifyStars(const int N,  const int Height, const int Width, con
   // We are going to spawn as many work items as there are items in the array n
   int i = get_global_id(0);
   int j = get_global_id(1);
-  if(j*N >= Width) {return;}
-  int startCol = i;
+
+  int startCol = i*N;
   int startRow = j*N; 
-  for(int k = 0; k < N; k++){
-    int curr_col = startCol;
-    int curr_row = startRow + k; 
+  if(startRow >= Width || startCol >= Height) {return;}
+  
+  for(int internal_row = 0; internal_row < N; internal_row++){
+    for(int internal_col = 0; internal_col < N; internal_col++){
+      int curr_col = startCol + internal_col;
+      int curr_row = startRow + internal_row; 
    
-    float brightness_curr_pixel = L[curr_row*Width+curr_col];
-    if(brightness_curr_pixel < MinBrightness) continue;
-    int row_i;
-    int col_j;
-    float maxBrightness = 0.0f;
-      //calculate max brightness of neighbours
-    for(row_i = curr_row - WindowSize; row_i < curr_row + WindowSize + 1; row_i++){
+      float brightness_curr_pixel = L[curr_row*Width+curr_col];
+      if(brightness_curr_pixel < MinBrightness) continue;
+      int row_i;
+      int col_j;
+      float maxBrightness = 0.0f;
+        //calculate max brightness of neighbours
+      for(row_i = curr_row - WindowSize; row_i < curr_row + WindowSize + 1; row_i++){
         for(col_j = curr_col - WindowSize; col_j < curr_col + WindowSize + 1; col_j++){
             //Skip the pixel itself.
             if(row_i == curr_row && col_j == curr_col){
@@ -91,12 +94,15 @@ __kernel void identifyStars(const int N,  const int Height, const int Width, con
             int corrected_col = correct_col_index(col_j, Width);
             float brightness = L[corrected_row*Width+corrected_col];
             if(brightness > maxBrightness){
-                maxBrightness = brightness;
+              maxBrightness = brightness;
             }
         }
     }
     if(brightness_curr_pixel >= maxBrightness){  
-        IsStars[curr_row*Width+curr_col] = 1; 
+      IsStars[curr_row*Width+curr_col] = 1; 
+    }
+    
+    
     }
   }
 }

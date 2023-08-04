@@ -17,7 +17,7 @@ import math
 
 
 # Get kernel source code from file.
-kernel_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "kernels_optimised_1.cl")
+kernel_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "second_optimised_kernel.cl")
 kernel = open(kernel_file).read()
 
 
@@ -42,7 +42,7 @@ def highlight_stars_result(height, width, array, name):
             pixels[j, i] = (r, g, b)
 
     f.close()
-    image.save(f"results/Optimsed1Parallel{name}.png")
+    image.save(f"results/SecondOptimisedParallel{name}.png")
 
 
 
@@ -129,9 +129,9 @@ def main():
     identifyStars = program.identifyStars
     identifyStars.set_scalar_arg_dtypes([np.int32, np.int32, np.int32, np.int32, np.float32, None, None])
    
-    global_range = (HEIGHT,WIDTH//1024+1) 
+    global_range = (HEIGHT//256+1,WIDTH//256+1)  #BLOCKS
     local_range =  None #(1, WIDTH//1024+1)
-    identifyStars(queue, global_range , local_range, 1024,  HEIGHT, WIDTH,  WINDOWSIZE,  THRESHOLD, d_GreyValues, d_Stars)           
+    identifyStars(queue, global_range , local_range, 256,  HEIGHT, WIDTH,  WINDOWSIZE,  THRESHOLD, d_GreyValues, d_Stars)           
     queue.finish()
     cl.enqueue_copy(queue, h_Stars, d_Stars)
     end_time = time.perf_counter()
