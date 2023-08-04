@@ -73,6 +73,17 @@ __kernel void identifyStars(const int N,  const int Height, const int Width, con
   int startRow = j*N; 
   if(startRow >= Width || startCol >= Height) {return;}
   
+//private luminosity array 256 = N, variable length arrays are not supported in OpenCL
+  
+  float lum_priv[256*256]; 
+  for(int internal_row = 0; internal_row < N; internal_row++){
+    for(int internal_col = 0; internal_col < N; internal_col++){
+        int curr_col = startCol + internal_col;
+        int curr_row = startRow + internal_row; 
+        lum_priv[internal_row*N + internal_col] = L[curr_row*Width + curr_col];
+    }
+  }
+
   for(int internal_row = 0; internal_row < N; internal_row++){
     for(int internal_col = 0; internal_col < N; internal_col++){
       int curr_col = startCol + internal_col;
@@ -90,9 +101,20 @@ __kernel void identifyStars(const int N,  const int Height, const int Width, con
             if(row_i == curr_row && col_j == curr_col){
               continue; 
             }
+            float brightness = 0.0f;
+            if(curr_row > i + WindowSize  && curr_row < i + N - WindowSize && curr_col > j + WindowSize && curr_col < j + N - WindowSize){ 
+                //only if in inner square of square as explained in drawing
+                //We can get values from private memory 
+                //get relative indices
+                int offset_col = col_j - startCol;
+                int offset_row = row_i - startRow;
+                brightness = lum_priv[offset_row*N + offset_col];            
+            }
+            //else{
             int corrected_row = correct_row_index(row_i, Height);
             int corrected_col = correct_col_index(col_j, Width);
-            float brightness = L[corrected_row*Width+corrected_col];
+            brightness = L[corrected_row*Width+corrected_col];
+            //}
             if(brightness > maxBrightness){
               maxBrightness = brightness;
             }
