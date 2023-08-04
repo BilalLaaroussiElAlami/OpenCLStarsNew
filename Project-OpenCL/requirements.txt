@@ -1,0 +1,5 @@
+numpy~=1.24.2
+Pillow~=9.4.0
+opencv-python~=4.7.0.68
+pyopencl~=2022.3.1
+PYOPENCL_CTX='0'

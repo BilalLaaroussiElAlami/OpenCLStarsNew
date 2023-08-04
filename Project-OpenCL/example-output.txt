@@ -1,0 +1,44 @@
+Threshold factor: 2
+Window size: 3
+
+Image: IRAS-19312-1950 (./images/IRAS-19312-1950.jpg)
+Image size: (675, 1200), 810000 pixels
+Threshold brightness: 132
+Star count: 2232
+Execution time: 2.3435s
+
+Image: behemoth-black-hole (./images/behemoth-black-hole.jpg)
+Image size: (2219, 2243), 4977217 pixels
+Threshold brightness: 109
+Star count: 22709
+Execution time: 27.2932s
+
+Image: NGC-362 (./images/NGC-362.jpg)
+Image size: (2550, 2250), 5737500 pixels
+Threshold brightness: 62
+Star count: 10552
+Execution time: 28.1097s
+
+Image: omega-nebula (./images/omega-nebula.jpg)
+Image size: (2435, 3000), 7305000 pixels
+Threshold brightness: 248
+Star count: 1479
+Execution time: 12.6399s
+
+Image: andromeda-2 (./images/andromeda-2.jpg)
+Image size: (6000, 6000), 36000000 pixels
+Threshold brightness: 37
+Star count: 226053
+Execution time: 254.1050s
+
+Image: andromeda (./images/andromeda.jpg)
+Image size: (6200, 6200), 38440000 pixels
+Threshold brightness: 27
+Star count: 179218
+Execution time: 207.7278s
+
+Image: cygnus-loop-nebula (./images/cygnus-loop-nebula.jpg)
+Image size: (7000, 9400), 65800000 pixels
+Threshold brightness: 37
+Star count: 178008
+Execution time: 357.5813s
