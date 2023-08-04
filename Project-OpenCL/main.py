@@ -39,18 +39,18 @@ def color_to_gray(image, name="stars"):
     # ImageOps.grayscale(image).save("{}.gray.png".format(name))
     return ImageOps.grayscale(image)
 
-def calculate_indices(i,j,height,width): 
-    if(i < 0):
-        i = abs(i)
-    if(i >= height):
-        spilledover = i - height
-        i = height - 1 - spilledover
-    if(j < 0):
-        j = abs(i)
-    if(j >= width):
-        spilledover = j - width
-        j = width - 1 - spilledover
-    return i,j            
+def calculate_indices(row,col,height,width): 
+    if(row < 0):
+        row = abs(row)
+    if(row >= height):
+        spilledover = row - height
+        row = height - 1 - spilledover
+    if(col < 0):
+        col = abs(col)
+    if(col >= width):
+        spilledover = col - width
+        col = width - 1 - spilledover
+    return row,col            
 
 
 def calculate_max_neighbors(image, row, col):
@@ -70,9 +70,9 @@ def calculate_max_neighbors(image, row, col):
             
             height = image.shape[0]
             width  = image.shape[1]
-            i,j  = calculate_indices(i,j, height,width)
-            if image[i, j] > max:
-                max = image[i, j]
+            ni,nj  = calculate_indices(i,j, height,width)
+            if image[ni, nj] > max:
+                max = image[ni, nj]
     return max
 
 

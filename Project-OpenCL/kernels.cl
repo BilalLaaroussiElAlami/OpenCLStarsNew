@@ -35,6 +35,29 @@ __kernel void sum(const int N, __global float *A, __global float *Res){
   Res[i] = sum;
 }
 
+//if the row is out of bounds, returns the mirrored index else returns the original
+int correct_row_index(int row, int height){
+  if(row < 0){
+    row = row*-1;
+  }
+  if(row >= height){
+    int spilledover = row - height;
+    row = height - 1 - spilledover;
+  }
+  return row;
+}
+//if the column is out of bounds, returns the mirrored index else returns the original 
+int correct_col_index(int col, int width){
+  if(col < 0){
+    col = col*-1;
+  }
+  if(col >= width){
+    int spilledover = col - width;
+    col = width - 1 - spilledover;
+  }
+  return col;
+}
+
 
 //Expects that every element in the array IsStars is 0. When a star i is a star we will assign IsStars[i] = 1
 //if WindowSize is 3 when looking in a 7*7 square 
@@ -45,39 +68,44 @@ __kernel void identifyStars(const int Height, const int Width, const int WindowS
   if( (i == 0 && j == 0) || (i == Width -1 && j == Height - 1 )){
    //printf("called identifyStars i:%d j:%d Width:%d Height:%d WindowSize:%d MinBrightness: %f\n", i, j,Width,Height,WindowSize,MinBrightness);
   } 
-  if(i < 11 ) { //HERE IS A BUG
-      //printf("called identifyStars i:%d j:%d Width:%d Height:%d WindowSize:%d MinBrightness: %f\n", i, j,Width,Height,WindowSize,MinBrightness);
+
+  /*
+  if(i < 11 ) { //HERE WAS A BUG
+    /printf("called identifyStars i:%d j:%d Width:%d Height:%d WindowSize:%d MinBrightness: %f\n", i, j,Width,Height,WindowSize,MinBrightness);
   }
+  */
   if(i >= Height) return;
   if(j >= Width) return;
   float brightnessPixel = L[i*Width+j];
   if(brightnessPixel < MinBrightness) return;
   //edge handling technique: pixel in window that are out of bounds are ignored
   //TODO change edge handling technique to MIRRORING
-  int ii;
-  int jj;
+  int row;
+  int col;
   float maxBrightness = 0.0f;
 
   //calculate max brightness of neighbours
-  for(ii = i - WindowSize; ii < i + WindowSize + 1; ii++){
-      for(jj = j - WindowSize; jj < j + WindowSize + 1; jj++){
+  for(row = i - WindowSize; row < i + WindowSize + 1; row++){
+      for(col = j - WindowSize; col < j + WindowSize + 1; col++){
+        /*
         //Check we are not out of bounds.
-        if(ii < 0 || ii  >= Height || jj  < 0 || jj >= Width){
+        if(row < 0 || row  >= Height || col  < 0 || col >= Width){
           continue; 
-        }
+        }*/
         //Skip the pixel itself.
-        if(ii == i && jj == j){
+        if(row == i && col == j){
           continue; 
         }
-        float brightness = L[ii*Width+jj];
-        if(brightness >= maxBrightness){
+        int correct_row = correct_row_index(row, Height);
+        int correct_col = correct_col_index(col, Width);
+        float brightness = L[correct_row*Width+correct_col];
+        if(brightness > maxBrightness){
           maxBrightness = brightness;
         }
       }
   }
-  if(brightnessPixel >= maxBrightness){
+  if(brightnessPixel >= maxBrightness){  
     IsStars[i*Width+j] = 1; 
-   // printf("is_star? %d %d: %d\n", i,j, IsStars[i*Width+j]);
   }
   
 }

@@ -42,3 +42,7 @@ Image size: (7000, 9400), 65800000 pixels
 Threshold brightness: 37
 Star count: 178008
 Execution time: 357.5813s
+
+
+22709
+20429
