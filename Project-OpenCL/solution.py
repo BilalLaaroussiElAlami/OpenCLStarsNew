@@ -38,7 +38,7 @@ def highlight_stars_result(height, width, array, name):
                 r,g,b = 0,0,0
             else:
                 r,g,b = 255,255,255
-            f.write(f"i {i} j {j}\n") 
+            #f.write(f"i {i} j {j}\n") 
             pixels[j, i] = (r, g, b)
 
     #f.close()
