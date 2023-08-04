@@ -1,3 +1,5 @@
+import math
+from xxlimited import new
 from PIL import Image, ImageOps
 import numpy as np
 import time
@@ -37,6 +39,19 @@ def color_to_gray(image, name="stars"):
     # ImageOps.grayscale(image).save("{}.gray.png".format(name))
     return ImageOps.grayscale(image)
 
+def calculate_indices(i,j,height,width): 
+    if(i < 0):
+        i = abs(i)
+    if(i >= height):
+        spilledover = i - height
+        i = height - 1 - spilledover
+    if(j < 0):
+        j = abs(i)
+    if(j >= width):
+        spilledover = j - width
+        j = width - 1 - spilledover
+    return i,j            
+
 
 def calculate_max_neighbors(image, row, col):
     """Calculate the maximum value of the neighbors of a pixel.
@@ -47,14 +62,17 @@ def calculate_max_neighbors(image, row, col):
     for i in range(row - WINDOW_SIZE, row + WINDOW_SIZE + 1):
         for j in range(col - WINDOW_SIZE, col + WINDOW_SIZE + 1):
             # Check we are not out of bounds.
-            if (i < 0 or i >= image.shape[0]) or (j < 0 or j >= image.shape[1]):
-                continue
+            #if (i < 0 or i >= image.shape[0]) or (j < 0 or j >= image.shape[1]):
+            #    continue
             # Skip the pixel itself.
             if i == row and j == col:
                 continue
+            
+            height = image.shape[0]
+            width  = image.shape[1]
+            i,j  = calculate_indices(i,j, height,width)
             if image[i, j] > max:
                 max = image[i, j]
-
     return max
 
 
