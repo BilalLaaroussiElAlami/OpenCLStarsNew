@@ -42,7 +42,7 @@ def highlight_stars_result(height, width, array, name):
             pixels[j, i] = (r, g, b)
 
     f.close()
-    image.save(f"results/Optimsed1Parallel{name}.png")
+    image.save(f"results/naive_{name}.png")
 
 
 
@@ -129,7 +129,8 @@ def main():
     identifyStars = program.identifyStars
     identifyStars.set_scalar_arg_dtypes([np.int32, np.int32, np.int32, np.float32, None, None])
     global_work_size = (HEIGHT,WIDTH)  
-    identifyStars(queue, global_work_size , None,  HEIGHT, WIDTH,  WINDOWSIZE,  THRESHOLD, d_GreyValues, d_Stars)           
+    local = None
+    identifyStars(queue, global_work_size , local,  HEIGHT, WIDTH,  WINDOWSIZE,  THRESHOLD, d_GreyValues, d_Stars)           
     queue.finish()
     cl.enqueue_copy(queue, h_Stars, d_Stars)
     end_time = time.perf_counter()

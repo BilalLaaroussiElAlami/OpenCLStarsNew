@@ -65,7 +65,7 @@ int correct_col_index(int col, int width){
 //if WindowSize is 3 when looking in a 7*7 square 
 //N == Width, but for readibility we add this paramater explicitly
 __kernel void identifyStars(const int N,  const int Height, const int Width, const int WindowSize, const float MinBrightness, __global float *L, __global int *IsStars){
-  // We are going to spawn as many work items as there are items in the array n
+
   int i = get_global_id(0);
   int j = get_global_id(1);
 

@@ -13,8 +13,7 @@ import os
 from PIL import Image, ImageOps
 import time
 import math
-#OPTIMSATION 1 : EVERY ROW WORK GROUP SIZE
-
+#OPTIMSATION 3 : local memory
 
 # Get kernel source code from file.
 kernel_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "third_optimised_kernel.cl")

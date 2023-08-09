@@ -1,5 +1,5 @@
 #define PYBIND11_DETAILED_ERROR_MESSAGES
-//OPTIMSATION 1: 1 WORK ITEM PER ROW
+//OPTIMSATION 1: 1 WORK ITEM PER TILE + PRIVATE MEMORY PER TILE
 
 
 //multiply every element of an array with a constant
@@ -65,7 +65,7 @@ int correct_col_index(int col, int width){
 //if WindowSize is 3 when looking in a 7*7 square 
 //N == Width, but for readibility we add this paramater explicitly
 __kernel void identifyStars(const int N,  const int Height, const int Width, const int WindowSize, const float MinBrightness, __global float *L, __global int *IsStars){
-  // We are going to spawn as many work items as there are items in the array n
+ 
   int i = get_global_id(0);
   int j = get_global_id(1);
 
@@ -73,7 +73,7 @@ __kernel void identifyStars(const int N,  const int Height, const int Width, con
   int startRow = j*N; 
   if(startRow >= Width || startCol >= Height) {return;}
   
-//private luminosity array 256 = N, variable length arrays are not supported in OpenCL
+//private luminosity array 256 = N, 'variable length arrays are not supported in OpenCL'
   
   float lum_priv[256*256]; 
   for(int internal_row = 0; internal_row < N; internal_row++){
@@ -97,6 +97,7 @@ __kernel void identifyStars(const int N,  const int Height, const int Width, con
         //calculate max brightness of neighbours
       for(row_i = curr_row - WindowSize; row_i < curr_row + WindowSize + 1; row_i++){
         for(col_j = curr_col - WindowSize; col_j < curr_col + WindowSize + 1; col_j++){
+            //barrier(CLK_LOCAL_MEM_FENCE);
             //Skip the pixel itself.
             if(row_i == curr_row && col_j == curr_col){
               continue; 
@@ -110,11 +111,12 @@ __kernel void identifyStars(const int N,  const int Height, const int Width, con
                 int offset_row = row_i - startRow;
                 brightness = lum_priv[offset_row*N + offset_col];            
             }
-            //else{
+            
+            else{
             int corrected_row = correct_row_index(row_i, Height);
             int corrected_col = correct_col_index(col_j, Width);
-            brightness = L[corrected_row*Width+corrected_col];
-            //}
+             brightness = L[corrected_row*Width+corrected_col];
+            }
             if(brightness > maxBrightness){
               maxBrightness = brightness;
             }

@@ -23,17 +23,17 @@ __kernel void greyScale(const int N, __global float *R, __global float *G, __glo
   }
 }
 
-//Will be used to eventually calculate the average in the host program. This function will calculate partial sums
-__kernel void sum(const int N, __global float *A, __global float *Res){
-  int i = get_global_id(0); 
-  //if(i == 0 || i == N-1) printf("called sum %d\n", i);
-  float sum = 0.0f;
-  int k;
-  for(k = 0; k < N; k++){
-    sum += A[i*N+k];
+  //Will be used to eventually calculate the average in the host program. This function will calculate partial sums
+  __kernel void sum(const int N, __global float *A, __global float *Res){
+    int i = get_global_id(0); //i is the row i'th rown of the array
+    //if(i == 0 || i == N-1) printf("called sum %d\n", i);
+    float sum = 0.0f;
+    int k;
+    for(k = 0; k < N; k++){
+      sum += A[i*N+k];
+    }
+    Res[i] = sum;
   }
-  Res[i] = sum;
-}
 
 //if the row is out of bounds, returns the mirrored index else returns the original
 int correct_row_index(int row, int height){
