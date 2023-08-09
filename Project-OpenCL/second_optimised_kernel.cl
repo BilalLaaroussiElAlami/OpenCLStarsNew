@@ -1,5 +1,5 @@
 #define PYBIND11_DETAILED_ERROR_MESSAGES
-//OPTIMSATION 1: 1 WORK ITEM PER ROW
+//OPTIMSATION 2: 1 WORK ITEM TILE
 
 
 //multiply every element of an array with a constant
